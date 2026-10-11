@@ -1,0 +1,23 @@
+{
+  "name": "Ivory Nails — Luxury Press-Ons & Polishes",
+  "short_name": "Ivory Nails",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FBF9F7",
+  "theme_color": "#FBF9F7",
+  "description": "Luxury Handcrafted Press-Ons, Polishes & Atelier Nail Care.",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

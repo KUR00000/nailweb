@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Ivory Nails — Luxury Handcrafted Press-Ons, Polishes & Atelier Nail Care. Built with Flutter, Supabase & Stripe.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ivory Nails">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Ivory Nails — Luxury Press-Ons & Polishes</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Preconnect & Google Fonts: Playfair Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Stripe JS SDK for Web Checkout & Elements -->
+  <script src="https://js.stripe.com/v3/"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #FBF9F7;
+      color: #1C1917;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #loading-container {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #FBF9F7;
+      z-index: 99999;
+      transition: opacity 0.5s ease-out;
+    }
+
+    .brand-monogram {
+      width: 68px;
+      height: 68px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #F5EBE8 0%, #EBD7D3 100%);
+      border: 1px solid #E8E2DD;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px -10px rgba(181, 119, 112, 0.25);
+      position: relative;
+    }
+
+    .brand-monogram svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .brand-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #1C1917;
+      margin-bottom: 6px;
+    }
+
+    .brand-subtitle {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #1C1917;
+      margin-bottom: 24px;
+      opacity: 0.85;
+    }
+
+    .spinner-ring {
+      width: 32px;
+      height: 32px;
+      border: 2px solid #EBD7D3;
+      border-top-color: #B57770;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Elegant Initial Splash Screen while WebAssembly / Flutter loads -->
+  <div id="loading-container">
+    <div class="brand-monogram">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 0C12 7.2 16.8 12 24 12C16.8 12 12 16.8 12 24C12 16.8 7.2 12 0 12C7.2 12 12 7.2 12 0Z" fill="#B8966E"/>
+        <polygon points="12,8 14.5,12 12,16 9.5,12" fill="#FFFFFF" fill-opacity="0.45"/>
+      </svg>
+    </div>
+    <div class="brand-title">Ivory Nails</div>
+    <div class="brand-subtitle">Atelier de Manucure</div>
+    <div class="spinner-ring"></div>
+  </div>
+
+  <script src="flutter.js" defer></script>
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: {{flutter_service_worker_version}},
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            // Fade out custom loader
+            const loader = document.getElementById('loading-container');
+            if (loader) {
+              loader.style.opacity = '0';
+              setTimeout(() => loader.remove(), 500);
+            }
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
