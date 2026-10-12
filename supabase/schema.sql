@@ -1,10 +1,20 @@
 -- ============================================================================
--- IVORY NAILS — SUPABASE POSTGRESQL SCHEMA & SEED DATA
+-- IVORY NAILS — SUPABASE POSTGRESQL SCHEMA & SEED DATA (BYOK PRODUCTION READY)
 -- Luxury Press-Ons & Polishes Digital Atelier
+-- Safe to retry, non-destructive, with hardened Row Level Security
 -- ============================================================================
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ----------------------------------------------------------------------------
+-- 0. SCHEMA MIGRATION TRACKING TABLE
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public._migrations (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
 -- ----------------------------------------------------------------------------
 -- 1. PRODUCTS TABLE
@@ -23,16 +33,26 @@ CREATE TABLE IF NOT EXISTS public.products (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Index for fast category filtering and sorting
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category);
 CREATE INDEX IF NOT EXISTS idx_products_price ON public.products(price);
 
--- Enable RLS for products (Public read access)
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read access to products" ON public.products;
+DROP POLICY IF EXISTS "Allow admin modify products" ON public.products;
 
 CREATE POLICY "Allow public read access to products"
   ON public.products FOR SELECT
   USING (true);
+
+CREATE POLICY "Allow admin modify products"
+  ON public.products FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    )
+  );
 
 -- ----------------------------------------------------------------------------
 -- 2. USER PROFILES TABLE (Mirrors Supabase Auth Users)
@@ -49,13 +69,26 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
+
 CREATE POLICY "Users can view their own profile"
   ON public.profiles FOR SELECT
-  USING (auth.uid() = id);
+  USING (
+    auth.uid() = id OR
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
 
 CREATE POLICY "Users can update their own profile"
   ON public.profiles FOR UPDATE
-  USING (auth.uid() = id);
+  USING (auth.uid() = id)
+  WITH CHECK (
+    auth.uid() = id AND
+    (
+      role IS NOT DISTINCT FROM (SELECT p.role FROM public.profiles p WHERE p.id = auth.uid()) OR
+      EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    )
+  );
 
 -- Trigger to automatically create a profile row on auth.users sign-up
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -67,7 +100,10 @@ BEGIN
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
     'customer'
-  );
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    updated_at = NOW();
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -89,7 +125,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
   tax NUMERIC(10, 2) NOT NULL,
   shipping NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
   total_amount NUMERIC(10, 2) NOT NULL,
-  status TEXT NOT NULL DEFAULT 'paid' CHECK (status IN ('pending', 'paid', 'preparing', 'shipped', 'delivered', 'cancelled')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'preparing', 'shipped', 'delivered', 'cancelled')),
   stripe_payment_id TEXT,
   shipping_address JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -100,13 +136,34 @@ CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders(created_at DES
 
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own orders"
-  ON public.orders FOR SELECT
-  USING (auth.uid() = user_id OR auth.role() = 'anon');
+DROP POLICY IF EXISTS "Users can view their own orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow inserting orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow customers to view own orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow inserting pending orders" ON public.orders;
+DROP POLICY IF EXISTS "Admin order update only" ON public.orders;
 
-CREATE POLICY "Allow inserting orders"
+-- Customers can view only their own orders
+CREATE POLICY "Allow customers to view own orders"
+  ON public.orders FOR SELECT
+  USING (
+    (auth.uid() IS NOT NULL AND auth.uid() = user_id) OR
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- Only pending orders can be initiated; final verification is handled by trusted backend
+CREATE POLICY "Allow inserting pending orders"
   ON public.orders FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    (auth.uid() IS NOT NULL AND auth.uid() = user_id AND status = 'pending') OR
+    (user_id IS NULL AND status = 'pending')
+  );
+
+-- Only admins/backend service-role can update order status
+CREATE POLICY "Admin order update only"
+  ON public.orders FOR UPDATE
+  USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
 
 -- ----------------------------------------------------------------------------
 -- 4. ORDER ITEMS TABLE
@@ -125,22 +182,75 @@ CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items(order_
 
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view order items for their orders"
+DROP POLICY IF EXISTS "Users can view order items for their orders" ON public.order_items;
+DROP POLICY IF EXISTS "Allow inserting order items" ON public.order_items;
+DROP POLICY IF EXISTS "Allow customers to view own order items" ON public.order_items;
+DROP POLICY IF EXISTS "Allow inserting pending order items" ON public.order_items;
+
+CREATE POLICY "Allow customers to view own order items"
   ON public.order_items FOR SELECT
   USING (
     EXISTS (
       SELECT 1 FROM public.orders
       WHERE public.orders.id = public.order_items.order_id
-      AND (public.orders.user_id = auth.uid() OR auth.role() = 'anon')
+      AND (
+        (auth.uid() IS NOT NULL AND public.orders.user_id = auth.uid()) OR
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+      )
     )
   );
 
-CREATE POLICY "Allow inserting order items"
+CREATE POLICY "Allow inserting pending order items"
   ON public.order_items FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.orders
+      WHERE public.orders.id = public.order_items.order_id
+      AND public.orders.status = 'pending'
+    )
+  );
 
 -- ----------------------------------------------------------------------------
--- 5. SEED DATA: Exactly 13 Curated Luxury Products
+-- 5. DIAGNOSTICS & VERIFICATION FUNCTION
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.check_atelier_schema_status()
+RETURNS JSONB AS $$
+DECLARE
+  v_products_count INT;
+  v_orders_exist BOOLEAN;
+  v_profiles_exist BOOLEAN;
+  v_rls_products BOOLEAN;
+  v_rls_orders BOOLEAN;
+  v_rls_profiles BOOLEAN;
+BEGIN
+  SELECT COUNT(*) INTO v_products_count FROM public.products;
+  SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'orders') INTO v_orders_exist;
+  SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'profiles') INTO v_profiles_exist;
+  
+  SELECT rowsecurity INTO v_rls_products FROM pg_tables WHERE schemaname = 'public' AND tablename = 'products';
+  SELECT rowsecurity INTO v_rls_orders FROM pg_tables WHERE schemaname = 'public' AND tablename = 'orders';
+  SELECT rowsecurity INTO v_rls_profiles FROM pg_tables WHERE schemaname = 'public' AND tablename = 'profiles';
+
+  RETURN jsonb_build_object(
+    'status', 'ready',
+    'products_count', v_products_count,
+    'tables_valid', v_orders_exist AND v_profiles_exist,
+    'rls_enforced', COALESCE(v_rls_products, false) AND COALESCE(v_rls_orders, false) AND COALESCE(v_rls_profiles, false)
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ----------------------------------------------------------------------------
+-- 6. RECORD MIGRATIONS
+-- ----------------------------------------------------------------------------
+INSERT INTO public._migrations (id, name)
+VALUES 
+  ('001', 'initial_schema'),
+  ('002', 'harden_rls_and_integrity')
+ON CONFLICT (id) DO NOTHING;
+
+-- ----------------------------------------------------------------------------
+-- 7. SEED DATA: Exactly 13 Curated Luxury Products
 -- ----------------------------------------------------------------------------
 INSERT INTO public.products (id, name, price, category, rating, review_count, image_url, description, details, in_stock)
 VALUES

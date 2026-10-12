@@ -30,7 +30,20 @@ migrate_working_dir/
 /build/
 
 # Web related
-lib/generated_plugin_registrant.dart
 
 # Screenshots & Testing Artifacts
 preview*.png
+
+# BYOK & Environment Configuration (Must NEVER be committed)
+.env
+.env.json
+.env.*.json
+!.env.example.json
+*.key
+*.pem
+server/.env
+server/.env.json
+node_modules/
+server/node_modules/
+server/dist/
+

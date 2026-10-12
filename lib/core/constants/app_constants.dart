@@ -1,3 +1,6 @@
+import '../config/config_validator.dart';
+import '../../services/integration_service.dart';
+
 /// Application-wide constants, backend configurations, and branding values.
 class AppConstants {
   static const String appName = 'Ivory Nails';
@@ -6,7 +9,7 @@ class AppConstants {
 
   // --------------------------------------------------------------------------
   // SUPABASE CONFIGURATION
-  // Can be overridden via --dart-define=SUPABASE_URL=... and SUPABASE_ANON_KEY=...
+  // Injected via .env.json or --dart-define-from-file=.env.json
   // --------------------------------------------------------------------------
   static const String defaultSupabaseUrl = 'https://demo-ivorynails.supabase.co';
   static const String defaultSupabaseAnonKey =
@@ -18,17 +21,23 @@ class AppConstants {
   );
 
   static const String supabaseAnonKey = String.fromEnvironment(
-    'SUPABASE_ANON_KEY',
-    defaultValue: defaultSupabaseAnonKey,
+    'SUPABASE_PUBLISHABLE_KEY',
+    defaultValue: String.fromEnvironment(
+      'SUPABASE_ANON_KEY',
+      defaultValue: defaultSupabaseAnonKey,
+    ),
   );
 
   /// Check whether live Supabase credentials are configured or if running in local atelier demo mode
   static bool get isUsingDemoSupabase =>
-      supabaseUrl == defaultSupabaseUrl || supabaseAnonKey == defaultSupabaseAnonKey;
+      !IntegrationService().isSupabaseCloudInitialized ||
+      supabaseUrl == defaultSupabaseUrl ||
+      supabaseAnonKey == defaultSupabaseAnonKey ||
+      ConfigValidator.isPlaceholder(supabaseUrl);
 
   // --------------------------------------------------------------------------
   // STRIPE CONFIGURATION
-  // Can be overridden via --dart-define=STRIPE_PUBLISHABLE_KEY=...
+  // Injected via .env.json or --dart-define-from-file=.env.json
   // --------------------------------------------------------------------------
   static const String defaultStripePublishableKey =
       'pk_test_51IvoryNailsDemoPublishableKey424242424242424242';

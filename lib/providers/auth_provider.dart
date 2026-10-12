@@ -82,6 +82,25 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// BYOK Sign In with Google OAuth via Supabase Auth
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final success = await _supabaseService.signInWithGoogle();
+      _isLoading = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = _cleanErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// One-click Demo VIP Mode
   Future<void> signInAsDemoVip() async {
     _isLoading = true;

@@ -416,6 +416,28 @@ class _AuthModalState extends State<AuthModal> with SingleTickerProviderStateMix
           const Divider(),
           const SizedBox(height: 12),
 
+          // Google OAuth Sign-In Button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: auth.isLoading
+                  ? null
+                  : () async {
+                      final success = await auth.signInWithGoogle();
+                      if (success && context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+              icon: const Icon(Icons.g_mobiledata, size: 22, color: AppTheme.charcoalNoir),
+              label: const Text('Continue with Google'),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppTheme.delicateBorder),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
           // Instant Demo VIP Toggle Button
           SizedBox(
             width: double.infinity,

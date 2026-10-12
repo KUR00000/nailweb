@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/order.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
+import '../../services/integration_service.dart';
 import '../../services/stripe_service.dart';
 
 /// Modal dialog facilitating Stripe Payment Processing and Order Confirmation.
@@ -98,6 +99,7 @@ class _CheckoutModalState extends State<CheckoutModal> {
         'city': _cityController.text.trim(),
         'postal_code': _zipController.text.trim(),
       },
+      promoCode: cart.appliedPromoCode,
     );
 
     if (result.isSuccess && result.completedOrder != null) {
@@ -298,12 +300,16 @@ class _CheckoutModalState extends State<CheckoutModal> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: AppTheme.charcoalNoir,
+                              color: IntegrationService().paymentService.isDemo
+                                  ? AppTheme.dustyRose
+                                  : AppTheme.charcoalNoir,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
-                              'STRIPE TEST MODE',
-                              style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                            child: Text(
+                              IntegrationService().paymentService.isDemo
+                                  ? 'ATELIER DEMO MODE'
+                                  : 'STRIPE SECURE',
+                              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],

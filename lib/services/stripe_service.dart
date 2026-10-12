@@ -1,32 +1,40 @@
-import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/cart_item.dart';
 import '../models/order.dart';
-import 'supabase_service.dart';
+import 'integration_service.dart';
 
 /// Payment result container returned after Stripe execution.
 class StripePaymentResult {
   final bool isSuccess;
+  final bool isRedirect;
+  final String? checkoutUrl;
   final String? paymentIntentId;
   final String? errorMessage;
   final OrderModel? completedOrder;
+  final bool isSimulated;
 
   const StripePaymentResult({
     required this.isSuccess,
+    this.isRedirect = false,
+    this.checkoutUrl,
     this.paymentIntentId,
     this.errorMessage,
     this.completedOrder,
+    this.isSimulated = false,
   });
 }
 
 /// Service handling Stripe Checkout and Web Payment processing.
+/// Delegates to the BYOK PaymentService abstraction.
 class StripeService {
   static final StripeService _instance = StripeService._internal();
   factory StripeService() => _instance;
   StripeService._internal();
 
-  /// Launch external hosted Stripe Checkout session URL if configured
+  final IntegrationService _integration = IntegrationService();
+
+  /// Launch external hosted Stripe Checkout session URL
   Future<bool> launchStripeHostedCheckout(String checkoutUrl) async {
     try {
       final uri = Uri.parse(checkoutUrl);
@@ -39,9 +47,8 @@ class StripeService {
     return false;
   }
 
-  /// Process payment via Stripe Elements (Web/Cross-platform).
-  /// Communicates with Supabase Edge Functions or processes client-side verification
-  /// before committing the order record into Supabase PostgreSQL.
+  /// Process payment via Stripe Elements / Checkout.
+  /// Calls the active BYOK payment service.
   Future<StripePaymentResult> processPayment({
     required List<CartItem> cartItems,
     required double subtotal,
@@ -56,77 +63,33 @@ class StripeService {
     required String customerEmail,
     String? customerName,
     Map<String, dynamic>? shippingAddress,
+    String? promoCode,
   }) async {
-    // 1. Client-side Luhn & sanitization check
-    final cleanCard = cardNumber.replaceAll(RegExp(r'\s+'), '');
-    if (cleanCard.length < 15) {
-      return const StripePaymentResult(
-        isSuccess: false,
-        errorMessage: 'Please enter a valid 16-digit card number.',
-      );
-    }
-
-    if (cvc.length < 3) {
-      return const StripePaymentResult(
-        isSuccess: false,
-        errorMessage: 'Invalid CVV/CVC security code.',
-      );
-    }
-
-    // 2. Realistic Stripe PaymentIntent round-trip latency
-    await Future.delayed(const Duration(milliseconds: 1400));
-
-    // Simulated Stripe decline test condition (ending in 0000)
-    if (cleanCard.endsWith('0000')) {
-      return const StripePaymentResult(
-        isSuccess: false,
-        errorMessage: 'Card was declined by issuing bank (Simulated test card).',
-      );
-    }
-
-    // 3. Generate Authentic Stripe Payment IDs and Ivory Nails Order Reference
-    final random = Random();
-    final orderReferenceNumber = 'IVORY-${1000 + random.nextInt(8999)}';
-    final simulatedStripePi =
-        'pi_3N${DateTime.now().millisecondsSinceEpoch.toRadixString(16)}_${random.nextInt(999999)}';
-
-    // 4. Construct Confirmed Order Model
-    final orderItems = cartItems
-        .map(
-          (ci) => OrderItemModel(
-            productId: ci.product.id,
-            productName: ci.product.name,
-            quantity: ci.quantity,
-            unitPrice: ci.product.price,
-            totalPrice: ci.totalPrice,
-            imageUrl: ci.product.imageUrl,
-          ),
-        )
-        .toList();
-
-    final order = OrderModel(
-      id: orderReferenceNumber,
-      userId: SupabaseService().currentUser?.id,
-      customerEmail: customerEmail.trim(),
-      customerName: customerName ?? cardholderName,
+    final result = await _integration.paymentService.processPayment(
+      cartItems: cartItems,
       subtotal: subtotal,
       tax: tax,
       shipping: shipping,
       totalAmount: totalAmount,
-      status: 'paid',
-      stripePaymentId: simulatedStripePi,
-      shippingAddress: shippingAddress ?? {'postal_code': postalCode},
-      items: orderItems,
-      createdAt: DateTime.now(),
+      cardholderName: cardholderName,
+      cardNumber: cardNumber,
+      expiryDate: expiryDate,
+      cvc: cvc,
+      postalCode: postalCode,
+      customerEmail: customerEmail,
+      customerName: customerName,
+      shippingAddress: shippingAddress,
+      promoCode: promoCode,
     );
 
-    // 5. Persist into Supabase PostgreSQL
-    await SupabaseService().saveOrder(order);
-
     return StripePaymentResult(
-      isSuccess: true,
-      paymentIntentId: simulatedStripePi,
-      completedOrder: order,
+      isSuccess: result.isSuccess,
+      isRedirect: result.isRedirect,
+      checkoutUrl: result.checkoutUrl,
+      paymentIntentId: result.paymentIntentId,
+      errorMessage: result.errorMessage,
+      completedOrder: result.completedOrder,
+      isSimulated: result.isSimulated,
     );
   }
 }
