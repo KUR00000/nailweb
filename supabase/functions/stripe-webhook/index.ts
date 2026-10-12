@@ -2,6 +2,16 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import { corsHeaders } from '../_shared/cors.ts';
 
+// Constant-time comparison preventing timing analysis attacks
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
 // Helper to verify Stripe webhook signature using Web Crypto API in Deno
 async function verifyStripeSignature(
   payload: string,
@@ -43,7 +53,7 @@ async function verifyStripeSignature(
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 
-  return signatures.some((sig) => sig === expectedSignature);
+  return signatures.some((sig) => timingSafeEqual(sig, expectedSignature));
 }
 
 serve(async (req) => {
@@ -87,29 +97,22 @@ serve(async (req) => {
     const event = JSON.parse(rawBody);
     const supabase = createClient(supabaseUrl!, supabaseServiceRoleKey!);
 
-    // Handle checkout.session.completed (Idempotent order status update)
+    // Handle checkout.session.completed (Idempotent order status update strictly from pending)
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const orderId = session.client_reference_id || session.metadata?.order_id;
       const paymentIntentId = session.payment_intent || session.id;
 
       if (orderId) {
-        // Query existing order state to ensure idempotency
-        const { data: existingOrder } = await supabase
+        // Strictly only transition orders from 'pending' to 'paid'
+        await supabase
           .from('orders')
-          .select('id, status')
+          .update({
+            status: 'paid',
+            stripe_payment_id: paymentIntentId,
+          })
           .eq('id', orderId)
-          .single();
-
-        if (existingOrder && existingOrder.status !== 'paid') {
-          await supabase
-            .from('orders')
-            .update({
-              status: 'paid',
-              stripe_payment_id: paymentIntentId,
-            })
-            .eq('id', orderId);
-        }
+          .eq('status', 'pending');
       }
     } else if (event.type === 'checkout.session.expired') {
       const session = event.data.object;

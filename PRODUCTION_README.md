@@ -41,6 +41,8 @@ Supabase holds your product catalog, customer accounts, and order history.
 4. Click the green **Run** button on the bottom right.
 5. ✨ *Done! All 13 nail products, pricing, and order tables are now installed.*
 
+> 💡 **Updating an existing store?** If you already ran an older schema previously, just run [`supabase/migrations/002_harden_rls_and_integrity.sql`](supabase/migrations/002_harden_rls_and_integrity.sql) to apply the latest security locks and integrity guards without touching your existing products!
+
 ### 1.3 Copy your Supabase keys
 In the left menu, click the **Settings** gear at the bottom > **API**.
 Copy and save these two things:
@@ -124,6 +126,8 @@ To keep your secret Stripe key 100% safe from browser users, a lightweight helpe
    STRIPE_SECRET_KEY=sk_test_YOUR_SECRET_KEY_FROM_STEP_2
    STRIPE_WEBHOOK_SECRET=whsec_YOUR_SIGNING_SECRET_FROM_STEP_2
    PORT=4242
+   # Optional: set to your custom domain for phishing & open redirect defense
+   STORE_FRONTEND_URL=https://ivorynails.com
    ```
 3. Start the server:
    ```bash
@@ -134,7 +138,7 @@ To keep your secret Stripe key 100% safe from browser users, a lightweight helpe
 ### Option 4B: Deploying online (Render, Railway, or Fly.io)
 When you deploy to a host like [render.com](https://render.com) or [railway.app](https://railway.app):
 1. Connect your repo and set the root folder to `server`.
-2. Add the 4 environment variables from Step 4A in the host's dashboard settings.
+2. Add the environment variables from Step 4A in the host's dashboard settings.
 3. Copy the URL Render/Railway gives you (e.g. `https://ivory-api.onrender.com`) and paste it as `PAYMENTS_BACKEND_URL` in your `.env.json`.
 
 ---
@@ -187,6 +191,25 @@ When you're ready to start selling to customers:
 
 ---
 
+---
+
+## 🛡️ Built-in Security Protections (Why Your Store Is Safe by Default)
+
+We designed Ivory Nails Atelier so that you don't need a cybersecurity team to keep your boutique safe. Here are the 8 defenses protecting your store 24/7:
+
+| Protection | What It Stops | How It Protects You |
+| :--- | :--- | :--- |
+| **1. Zero Secret Keys on Web** | Credential theft | Private keys (`sk_...`, `service_role`) never touch the browser. Only public `pk_...` keys are in `.env.json`. |
+| **2. Cryptographic Identity Lock** | Account & order spoofing | Verifies customer sessions using Supabase cryptographic JWTs. Attackers cannot view or forge other buyers' orders. |
+| **3. Database RLS Lockdown** | Database flooding & fake orders | Direct customer inserts to `orders` and `order_items` are blocked. Only your verified payments backend can record orders. |
+| **4. Authoritative Server Pricing** | Price & cart tampering | Item prices, promo codes (`IVORY10`, `ATELIER20`), 8% sales tax, and $50+ free shipping are calculated on your backend. Fake client prices are discarded. |
+| **5. Phishing & Open Redirect Shield** | Fake payment pages | Checkout success and cancel URLs are verified against your domain. Attackers cannot hijack redirects to phishing sites. |
+| **6. Anti-Bot Rate Limiting** | Carding attacks & DoS | Caps checkout attempts to 30 per 15 minutes per IP address to stop carding bots and API flooding. |
+| **7. Tamper-Proof Webhook Signatures** | Fake payment alerts | Webhook notifications use constant-time HMAC-SHA256 signature checks to prevent timing attacks and fake "paid" events. |
+| **8. Content Security Policy (CSP)** | Cross-Site Scripting (XSS) | High-security browser policies prevent rogue scripts, keyloggers, or injected code from running on your storefront. |
+
+---
+
 ## ❓ Frequently Asked Questions
 
 #### Q: What if I don't enter any keys at all?
@@ -197,3 +220,13 @@ Your store automatically runs in **Atelier Demo Mode**. Everything works offline
 
 #### Q: Can someone tamper with the prices in the browser?
 **No.** The payment server queries the database directly to confirm the exact price of every item before charging the card. Any fake prices sent from a browser are rejected.
+
+#### Q: Can a customer see or tamper with another customer's orders?
+**No.** Supabase Row Level Security (RLS) ensures customers can only read orders matching their authenticated account ID. Direct order insertions from the browser are completely blocked.
+
+#### Q: How do discounts and promo codes work?
+Your backend authoritatively validates promo codes (`IVORY10` for 10% off, `ATELIER20` for 20% off) against the server catalog. Unknown or expired promo codes are ignored without crashing.
+
+#### Q: What happens if a bot tries to spam my checkout?
+The built-in rate limiter blocks any IP address that attempts more than 30 checkouts in 15 minutes, returning HTTP 429 ("Too Many Requests").
+

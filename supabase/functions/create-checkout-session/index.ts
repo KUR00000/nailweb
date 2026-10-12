@@ -3,6 +3,26 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import { corsHeaders } from '../_shared/cors.ts';
 import { calculateOrderDetails, ProductRecord } from '../_shared/pricing.ts';
 
+const STORE_FRONTEND_URL = Deno.env.get('STORE_FRONTEND_URL') || 'https://ivorynails.com';
+
+function sanitizeRedirectUrl(url: string | undefined, defaultSuffix: string): string {
+  if (!url) return `${STORE_FRONTEND_URL}${defaultSuffix}`;
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.origin === STORE_FRONTEND_URL ||
+      parsed.hostname === 'localhost' ||
+      parsed.hostname === '127.0.0.1' ||
+      parsed.hostname.endsWith('.ivorynails.com')
+    ) {
+      return url;
+    }
+  } catch {
+    // Invalid URL
+  }
+  return `${STORE_FRONTEND_URL}${defaultSuffix}`;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -36,7 +56,6 @@ serve(async (req) => {
       shippingAddress,
       successUrl,
       cancelUrl,
-      userId,
     } = body;
 
     if (!customerEmail || !customerEmail.includes('@')) {
@@ -55,6 +74,23 @@ serve(async (req) => {
 
     // Initialize privileged Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    // Cryptographic JWT caller verification (prevents userId spoofing)
+    let verifiedUserId: string | null = null;
+    const authHeader = req.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7).trim();
+      if (token) {
+        try {
+          const { data: userData, error: userError } = await supabase.auth.getUser(token);
+          if (!userError && userData?.user?.id) {
+            verifiedUserId = userData.user.id;
+          }
+        } catch {
+          // Token invalid; guest checkout
+        }
+      }
+    }
 
     // Fetch verified products from DB
     const productIds = items.map((i: any) => i.productId);
@@ -89,8 +125,8 @@ serve(async (req) => {
     stripeParams.append('client_reference_id', orderId);
     stripeParams.append('metadata[order_id]', orderId);
     stripeParams.append('metadata[customer_email]', customerEmail.trim());
-    if (userId) {
-      stripeParams.append('metadata[user_id]', userId);
+    if (verifiedUserId) {
+      stripeParams.append('metadata[user_id]', verifiedUserId);
     }
 
     // Add line items
@@ -106,7 +142,7 @@ serve(async (req) => {
       stripeParams.append(`line_items[${i}][quantity]`, item.quantity.toString());
     }
 
-    // Add shipping & taxes / adjustments if applicable
+    // Add shipping & taxes
     let lineIndex = calculatedOrder.items.length;
     if (calculatedOrder.shipping > 0) {
       const shippingCents = Math.round(calculatedOrder.shipping * 100);
@@ -125,10 +161,14 @@ serve(async (req) => {
       lineIndex++;
     }
 
-    const defaultSuccess = 'https://ivorynails.com/?session_id={CHECKOUT_SESSION_ID}&status=success';
-    const defaultCancel = 'https://ivorynails.com/?status=cancelled';
-    stripeParams.append('success_url', successUrl || defaultSuccess);
-    stripeParams.append('cancel_url', cancelUrl || defaultCancel);
+    // Open redirect protection: sanitize URLs
+    const safeSuccess = sanitizeRedirectUrl(
+      successUrl,
+      '/?session_id={CHECKOUT_SESSION_ID}&status=success'
+    );
+    const safeCancel = sanitizeRedirectUrl(cancelUrl, '/?status=cancelled');
+    stripeParams.append('success_url', safeSuccess);
+    stripeParams.append('cancel_url', safeCancel);
 
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
@@ -149,10 +189,10 @@ serve(async (req) => {
       );
     }
 
-    // Persist pending order to database
+    // Persist pending order with verified user ID
     const { error: orderInsertError } = await supabase.from('orders').insert({
       id: orderId,
-      user_id: userId || null,
+      user_id: verifiedUserId,
       customer_email: customerEmail.trim(),
       customer_name: customerName || customerEmail.split('@')[0],
       subtotal: calculatedOrder.subtotal,

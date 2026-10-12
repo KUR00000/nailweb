@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/config/app_config.dart';
 import '../../models/cart_item.dart';
@@ -82,9 +83,22 @@ class StripePaymentService implements PaymentService {
         'cancelUrl': kIsWeb ? '${Uri.base.origin}/?status=cancelled' : null,
       };
 
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+      };
+
+      try {
+        final session = Supabase.instance.client.auth.currentSession;
+        if (session != null && session.accessToken.isNotEmpty) {
+          headers['Authorization'] = 'Bearer ${session.accessToken}';
+        }
+      } catch (_) {
+        // Not using live Supabase cloud
+      }
+
       final response = await http.post(
         Uri.parse(endpoint),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: jsonEncode(payload),
       );
 

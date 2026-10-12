@@ -110,15 +110,8 @@ CREATE POLICY "Allow customers to view own orders"
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
   );
 
--- Prevent unauthorized direct insert from browser.
--- Note: Service-role (trusted backend) bypasses RLS and handles all order creation.
--- Authenticated users may insert orders ONLY if status is 'pending' and user_id matches.
-CREATE POLICY "Allow inserting pending orders"
-  ON public.orders FOR INSERT
-  WITH CHECK (
-    (auth.uid() IS NOT NULL AND auth.uid() = user_id AND status = 'pending') OR
-    (user_id IS NULL AND status = 'pending')
-  );
+-- Direct client-side INSERT is blocked to prevent database flooding.
+-- Trusted backend (service-role) bypasses RLS and creates verified pending orders.
 
 -- Prevent customer updating orders (status, payment id, total amount are immutable to client)
 DROP POLICY IF EXISTS "Prevent client order modification" ON public.orders;
@@ -151,16 +144,7 @@ CREATE POLICY "Allow customers to view own order items"
     )
   );
 
--- Order items can be inserted with pending orders
-CREATE POLICY "Allow inserting pending order items"
-  ON public.order_items FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.orders
-      WHERE public.orders.id = public.order_items.order_id
-      AND public.orders.status = 'pending'
-    )
-  );
+-- Direct client-side INSERT is blocked; handled by trusted backend service-role.
 
 -- ----------------------------------------------------------------------------
 -- 5. VERIFICATION HELPER FUNCTION

@@ -4,8 +4,10 @@ import '../../models/order.dart';
 import 'order_service.dart';
 
 /// Production order service fetching customer orders via Supabase RLS.
+/// Order creation is executed by the trusted backend during checkout session creation.
 class SupabaseOrderService implements OrderService {
   final SupabaseClient _client;
+  final List<OrderModel> _cachedOrders = [];
 
   SupabaseOrderService(this._client);
 
@@ -13,7 +15,7 @@ class SupabaseOrderService implements OrderService {
   Future<List<OrderModel>> fetchOrders({String? userId}) async {
     final uid = userId ?? _client.auth.currentUser?.id;
     if (uid == null) {
-      return [];
+      return List.unmodifiable(_cachedOrders);
     }
 
     try {
@@ -48,47 +50,26 @@ class SupabaseOrderService implements OrderService {
         );
       }).toList();
 
+      // Merge with any cached pending orders not yet indexed
+      final existingIds = list.map((o) => o.id).toSet();
+      for (final cached in _cachedOrders) {
+        if (!existingIds.contains(cached.id)) {
+          list.insert(0, cached);
+        }
+      }
+
       return list;
     } catch (e) {
       debugPrint('Error fetching orders from Supabase: $e');
-      return [];
+      return List.unmodifiable(_cachedOrders);
     }
   }
 
   @override
   Future<bool> saveOrder(OrderModel order) async {
-    try {
-      await _client.from('orders').insert({
-        'id': order.id,
-        'user_id': _client.auth.currentUser?.id,
-        'customer_email': order.customerEmail,
-        'customer_name': order.customerName,
-        'subtotal': order.subtotal,
-        'tax': order.tax,
-        'shipping': order.shipping,
-        'total_amount': order.totalAmount,
-        'status': order.status,
-        'stripe_payment_id': order.stripePaymentId,
-        'shipping_address': order.shippingAddress,
-        'created_at': order.createdAt.toIso8601String(),
-      });
-
-      if (order.items.isNotEmpty) {
-        final itemsPayload = order.items.map((item) => {
-              'order_id': order.id,
-              'product_id': item.productId,
-              'product_name': item.productName,
-              'quantity': item.quantity,
-              'unit_price': item.unitPrice,
-              'total_price': item.totalPrice,
-            }).toList();
-
-        await _client.from('order_items').insert(itemsPayload);
-      }
-      return true;
-    } catch (e) {
-      debugPrint('Failed to save order to Supabase: $e');
-      return false;
-    }
+    // Cache order locally for immediate UI display
+    _cachedOrders.removeWhere((o) => o.id == order.id);
+    _cachedOrders.insert(0, order);
+    return true;
   }
 }

@@ -150,15 +150,10 @@ CREATE POLICY "Allow customers to view own orders"
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
   );
 
--- Only pending orders can be initiated; final verification is handled by trusted backend
-CREATE POLICY "Allow inserting pending orders"
-  ON public.orders FOR INSERT
-  WITH CHECK (
-    (auth.uid() IS NOT NULL AND auth.uid() = user_id AND status = 'pending') OR
-    (user_id IS NULL AND status = 'pending')
-  );
+-- Direct client-side INSERT is blocked to prevent database flooding.
+-- Trusted backend (service-role) bypasses RLS and creates verified pending orders.
 
--- Only admins/backend service-role can update order status
+-- Only admins can manually update orders
 CREATE POLICY "Admin order update only"
   ON public.orders FOR UPDATE
   USING (
@@ -200,15 +195,7 @@ CREATE POLICY "Allow customers to view own order items"
     )
   );
 
-CREATE POLICY "Allow inserting pending order items"
-  ON public.order_items FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.orders
-      WHERE public.orders.id = public.order_items.order_id
-      AND public.orders.status = 'pending'
-    )
-  );
+-- Direct client-side INSERT is blocked; handled by trusted backend service-role.
 
 -- ----------------------------------------------------------------------------
 -- 5. DIAGNOSTICS & VERIFICATION FUNCTION
