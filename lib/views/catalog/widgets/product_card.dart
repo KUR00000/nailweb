@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/product.dart';
 import '../../../providers/cart_provider.dart';
+import '../../common/atelier_star_icon.dart';
 
 /// Minimalist Editorial Luxury Product Card with Shade Swatch, Finish Specs & Couture Badges.
 class ProductCard extends StatefulWidget {
@@ -241,8 +242,8 @@ class _ProductCardState extends State<ProductCard> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.star_rounded, color: AppTheme.goldAccent, size: 14),
-                            const SizedBox(width: 4),
+                            const AtelierStarIcon(size: 11, color: AppTheme.goldAccent),
+                            const SizedBox(width: 5),
                             Text(
                               widget.product.rating.toStringAsFixed(1),
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -331,7 +332,7 @@ class _ProductCardState extends State<ProductCard> {
                         Text(
                           '\$${widget.product.price.toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontSize: 18,
+                                fontSize: 19,
                                 fontWeight: FontWeight.w700,
                                 fontFamily: 'Playfair Display',
                                 color: AppTheme.charcoalNoir,
@@ -353,12 +354,12 @@ class _ProductCardState extends State<ProductCard> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: inCart ? AppTheme.blush100 : AppTheme.charcoalNoir,
+                            backgroundColor: inCart ? AppTheme.blush100 : AppTheme.velvetNoir,
                             foregroundColor: inCart ? AppTheme.deepRose : AppTheme.pureWhite,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(20),
                               side: BorderSide(
                                 color: inCart ? AppTheme.blush300 : Colors.transparent,
                               ),

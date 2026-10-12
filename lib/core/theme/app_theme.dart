@@ -23,13 +23,17 @@ class AppTheme {
 
   // Neutrals (Warm Stone & Charcoal)
   static const Color charcoalNoir = Color(0xFF1C1917);
+  static const Color velvetNoir = Color(0xFF141211);
   static const Color textMuted = Color(0xFF78716C);
   static const Color textSubtle = Color(0xFFA8A29E);
   static const Color delicateBorder = Color(0xFFE8E2DD);
   static const Color borderSubtle = Color(0xFFF0EBE7);
+  static const Color warmTaupe = Color(0xFF8C827A);
+  static const Color satinCream = Color(0xFFFFFDFB);
 
   // Accents
   static const Color goldAccent = Color(0xFFB8966E);
+  static const Color goldChampagne = Color(0xFFC5A880);
   static const Color emeraldSuccess = Color(0xFF2E6B49);
   static const Color amberWarning = Color(0xFFB47833);
   static const Color errorCrimson = Color(0xFFA83A3A);
@@ -78,6 +82,19 @@ class AppTheme {
           color: const Color(0xFFB57770).withValues(alpha: 0.06),
           blurRadius: 10,
           offset: const Offset(0, 4),
+        ),
+      ];
+
+  static List<BoxShadow> get editorialShadow => [
+        BoxShadow(
+          color: const Color(0xFF1C1917).withValues(alpha: 0.04),
+          blurRadius: 32,
+          offset: const Offset(0, 16),
+        ),
+        BoxShadow(
+          color: const Color(0xFFB57770).withValues(alpha: 0.04),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
         ),
       ];
 

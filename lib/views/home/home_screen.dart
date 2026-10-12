@@ -328,26 +328,13 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1280),
+                constraints: const BoxConstraints(maxWidth: 1320),
                 child: Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: isDesktop ? 32 : 20,
-                    vertical: isDesktop ? 40 : 24,
+                    horizontal: isDesktop ? 36 : 20,
+                    vertical: isDesktop ? 48 : 24,
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppTheme.pureWhite, Color(0xFFF9F5F3)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(32),
-                      border: Border.all(color: AppTheme.delicateBorder),
-                      boxShadow: AppTheme.softShadow,
-                    ),
-                    padding: EdgeInsets.all(isDesktop ? 48 : 24),
-                    child: isDesktop ? _buildDesktopHero(context) : _buildMobileHero(context),
-                  ),
+                  child: isDesktop ? _buildDesktopHero(context) : _buildMobileHero(context),
                 ),
               ),
             ),
@@ -359,34 +346,42 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1280),
+                constraints: const BoxConstraints(maxWidth: 1320),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isDesktop ? 32 : 20, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: isDesktop ? 36 : 20, vertical: 8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     decoration: BoxDecoration(
                       color: AppTheme.pureWhite,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(color: AppTheme.delicateBorder),
+                      boxShadow: AppTheme.subtleDepth,
                     ),
                     child: Row(
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.palette_outlined, size: 16, color: AppTheme.dustyRose),
-                            SizedBox(width: 8),
-                            Text(
-                              'SHADE PALETTE:',
+                            Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                color: AppTheme.blush100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.palette_outlined, size: 15, color: AppTheme.deepRose),
+                            ),
+                            const SizedBox(width: 10),
+                            const Text(
+                              'SHADE SPECTRUM:',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
+                                letterSpacing: 1.0,
                                 color: AppTheme.charcoalNoir,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 20),
                         Expanded(
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
@@ -408,33 +403,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                         catalog.setSearchQuery(shade['name']!);
                                       }
                                     },
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    borderRadius: BorderRadius.circular(22),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       decoration: BoxDecoration(
-                                        color: isSelected ? AppTheme.charcoalNoir : AppTheme.ivoryGround,
-                                        borderRadius: BorderRadius.circular(20),
+                                        color: isSelected ? AppTheme.velvetNoir : AppTheme.ivoryGround,
+                                        borderRadius: BorderRadius.circular(22),
                                         border: Border.all(
-                                          color: isSelected ? AppTheme.charcoalNoir : AppTheme.delicateBorder,
+                                          color: isSelected ? AppTheme.velvetNoir : AppTheme.delicateBorder,
+                                          width: 1.0,
                                         ),
+                                        boxShadow: isSelected
+                                            ? [
+                                                BoxShadow(
+                                                  color: Colors.black.withValues(alpha: 0.12),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 2),
+                                                ),
+                                              ]
+                                            : null,
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Container(
-                                            width: 12,
-                                            height: 12,
+                                            width: 13,
+                                            height: 13,
                                             decoration: BoxDecoration(
                                               color: color,
                                               shape: BoxShape.circle,
                                               border: Border.all(color: Colors.white, width: 1.5),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black.withValues(alpha: 0.08),
+                                                  blurRadius: 2,
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          const SizedBox(width: 6),
+                                          const SizedBox(width: 8),
                                           Text(
                                             shade['name']!,
                                             style: TextStyle(
-                                              fontSize: 11,
+                                              fontSize: 11.5,
                                               fontWeight: FontWeight.w600,
                                               color: isSelected ? Colors.white : AppTheme.charcoalNoir,
                                             ),
@@ -627,9 +639,9 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1280),
+                constraints: const BoxConstraints(maxWidth: 1320),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isDesktop ? 32 : 20, vertical: 36),
+                  padding: EdgeInsets.symmetric(horizontal: isDesktop ? 36 : 20, vertical: 48),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -640,73 +652,139 @@ class _HomeScreenState extends State<HomeScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.blush100,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Text(
-                                  'SALON PROTOCOL',
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8, color: AppTheme.dustyRose),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
                               Text(
                                 'The Atelier Quality Standard',
                                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                       fontFamily: 'Playfair Display',
-                                      fontSize: 26,
+                                      fontSize: isDesktop ? 32 : 24,
                                       fontWeight: FontWeight.w600,
+                                      letterSpacing: -0.4,
+                                      color: AppTheme.charcoalNoir,
                                     ),
+                              ),
+                              const SizedBox(height: 6),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 620),
+                                child: const Text(
+                                  'Three foundational pillars engineered for 5+ reusable wears with zero natural keratin damage.',
+                                  style: TextStyle(fontSize: 13.5, color: AppTheme.textMuted, height: 1.55),
+                                ),
                               ),
                             ],
                           ),
                           if (isDesktop)
-                            const Text(
-                              'Designed for 5+ Reusable Wears • Zero Damage',
-                              style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: AppTheme.pureWhite,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: AppTheme.delicateBorder),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  AtelierStarIcon(size: 10, color: AppTheme.goldAccent),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'PARIS SALON PROTOCOL',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1.0,
+                                      color: AppTheme.charcoalNoir,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
-                      // 3 Feature Cards
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildGuideCard(
-                              context,
-                              icon: Icons.straighten,
-                              tag: 'STEP 1: SIZING',
-                              title: 'Precision Sizing',
-                              description:
-                                  'Every set includes 30 nails across 15 curated widths. From delicate petite beds (14mm) to wide profiles (18mm), finding your custom contour takes under 60 seconds.',
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildGuideCard(
-                              context,
-                              icon: Icons.brush_outlined,
-                              tag: 'STEP 2: APPLICATION',
-                              title: 'Two Wear Protocols',
-                              description:
-                                  'Option A: Ultra-hold adhesive tabs for weekend galas (reusable instantly). Option B: Salon acrylic resin glue for 3 full weeks of shower and keyboard-proof hold.',
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildGuideCard(
-                              context,
-                              icon: Icons.auto_awesome,
-                              tag: 'STEP 3: LONGEVITY',
-                              title: 'Zero Natural Damage',
-                              description:
-                                  'Gentle warm water & cuticle oil soak enables seamless removal without damaging your natural nail bed keratin layer. 10-Free & cruelty-free guaranteed.',
-                            ),
-                          ),
-                        ],
+                      // Architectural 3-Pillar Editorial Container
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.pureWhite,
+                          borderRadius: BorderRadius.circular(26),
+                          border: Border.all(color: AppTheme.delicateBorder),
+                          boxShadow: AppTheme.editorialShadow,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isDesktop ? 40 : 22,
+                          vertical: isDesktop ? 42 : 26,
+                        ),
+                        child: isDesktop
+                            ? Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: _buildEditorialPillar(
+                                      romanNumeral: 'I',
+                                      title: 'Precision Sizing Architecture',
+                                      badge: '15 Curated Widths',
+                                      description:
+                                          'Every set includes 30 nails across 15 curated widths (14mm petite to 18mm wide). Ergonomic natural curvature mapping ensures flush cuticle alignment in under 60 seconds.',
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 1,
+                                    height: 140,
+                                    color: AppTheme.delicateBorder,
+                                    margin: const EdgeInsets.symmetric(horizontal: 32),
+                                  ),
+                                  Expanded(
+                                    child: _buildEditorialPillar(
+                                      romanNumeral: 'II',
+                                      title: 'Dual Wear Protocols',
+                                      badge: 'Tabs or Acrylic Resin',
+                                      description:
+                                          'Select your duration: Ultra-hold adhesive tabs for weekend galas with instant reusability, or salon acrylic resin glue for 3 full weeks of waterproof keyboard retention.',
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 1,
+                                    height: 140,
+                                    color: AppTheme.delicateBorder,
+                                    margin: const EdgeInsets.symmetric(horizontal: 32),
+                                  ),
+                                  Expanded(
+                                    child: _buildEditorialPillar(
+                                      romanNumeral: 'III',
+                                      title: 'Keratin Plate Preservation',
+                                      badge: 'Zero Natural Damage',
+                                      description:
+                                          'Warm botanical oil immersion dissolves the adhesive bond effortlessly without peeling. Your natural nail bed stays hydrated, strong, and intact. 10-Free certified.',
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  _buildEditorialPillar(
+                                    romanNumeral: 'I',
+                                    title: 'Precision Sizing Architecture',
+                                    badge: '15 Curated Widths',
+                                    description:
+                                        'Every set includes 30 nails across 15 curated widths (14mm petite to 18mm wide) ensuring flush cuticle alignment.',
+                                  ),
+                                  const Divider(color: AppTheme.delicateBorder, height: 32),
+                                  _buildEditorialPillar(
+                                    romanNumeral: 'II',
+                                    title: 'Dual Wear Protocols',
+                                    badge: 'Tabs or Acrylic Resin',
+                                    description:
+                                        'Ultra-hold adhesive tabs for weekend galas or salon acrylic resin for 3 weeks of waterproof retention.',
+                                  ),
+                                  const Divider(color: AppTheme.delicateBorder, height: 32),
+                                  _buildEditorialPillar(
+                                    romanNumeral: 'III',
+                                    title: 'Keratin Plate Preservation',
+                                    badge: 'Zero Natural Damage',
+                                    description:
+                                        'Warm botanical oil immersion releases the bond cleanly. 10-Free & cruelty-free guaranteed.',
+                                  ),
+                                ],
+                              ),
                       ),
                     ],
                   ),
@@ -721,29 +799,34 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(
             child: Container(
               color: AppTheme.pureWhite,
-              padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1100),
+                  constraints: const BoxConstraints(maxWidth: 1040),
                   child: Column(
                     children: [
-                      const Icon(Icons.format_quote, size: 36, color: AppTheme.dustyRose),
-                      const SizedBox(height: 12),
+                      const AtelierStarIcon(size: 20, color: AppTheme.goldAccent),
+                      const SizedBox(height: 16),
                       Text(
                         '“The almond silhouette fits so cleanly at the cuticle that everyone assumed I spent two hours at a private Beverly Hills salon.”',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontFamily: 'Playfair Display',
-                              fontSize: 22,
+                              fontSize: isDesktop ? 25 : 19,
                               fontStyle: FontStyle.italic,
-                              height: 1.45,
+                              height: 1.48,
                               color: AppTheme.charcoalNoir,
                             ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 18),
                       const Text(
                         'CAMILLE R. • EDITORIAL DIRECTOR, PARIS VOGUE SELECTS',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: AppTheme.textMuted),
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.4,
+                          color: AppTheme.textMuted,
+                        ),
                       ),
                     ],
                   ),
@@ -801,53 +884,30 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.charcoalNoir,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AtelierStarIcon(size: 8, color: AppTheme.goldAccent),
-                    SizedBox(width: 8),
-                    Text(
-                      'SPRING 2026 EDITORIAL • 13 HAND-POURED CREATIONS',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
-                        color: AppTheme.pureWhite,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
               Text(
                 'Bespoke Glaze &\nSculpted Form.',
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: 54,
+                      fontSize: 64,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Playfair Display',
                       color: AppTheme.charcoalNoir,
-                      height: 1.08,
+                      height: 1.04,
+                      letterSpacing: -0.8,
                     ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 540),
+                constraints: const BoxConstraints(maxWidth: 520),
                 child: Text(
-                  'Haute couture salon press-ons and 10-Free micro-milled lacquers. Engineered for zero natural nail damage and effortless 3-week wear, paired with Supabase authentication and safe Stripe payments.',
+                  'Haute couture salon press-ons and 10-Free micro-milled lacquers. Hand-sculpted in limited batches for 3-week retention with zero natural keratin damage.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppTheme.textMuted,
-                        fontSize: 15,
-                        height: 1.6,
+                        fontSize: 15.5,
+                        height: 1.65,
                       ),
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
 
               // Action Buttons
               Row(
@@ -855,17 +915,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ElevatedButton(
                     onPressed: _scrollToCatalog,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.charcoalNoir,
+                      backgroundColor: AppTheme.velvetNoir,
                       foregroundColor: AppTheme.pureWhite,
-                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      elevation: 0,
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('Explore 13 Pieces', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                        Text('Explore 13 Pieces', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, letterSpacing: 0.2)),
                         SizedBox(width: 8),
-                        Icon(Icons.arrow_downward, size: 16),
+                        AtelierStarIcon(size: 10, color: AppTheme.goldAccent),
                       ],
                     ),
                   ),
@@ -873,38 +934,51 @@ class _HomeScreenState extends State<HomeScreen> {
                   OutlinedButton(
                     onPressed: _scrollToGuide,
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                       backgroundColor: AppTheme.pureWhite,
+                      side: const BorderSide(color: AppTheme.delicateBorder),
                     ),
-                    child: const Text('Sizing & Fit Guide', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                    child: const Text('Fitting & Sizing Protocol', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: AppTheme.charcoalNoir)),
                   ),
+                ],
+              ),
+              const SizedBox(height: 36),
+
+              // Hallmarks
+              Row(
+                children: [
+                  _buildHallmarkItem('15 Sizing Widths'),
+                  _buildHallmarkDivider(),
+                  _buildHallmarkItem('Salon Acrylic Retention'),
+                  _buildHallmarkDivider(),
+                  _buildHallmarkItem('10-Free Clean Beauty'),
                 ],
               ),
             ],
           ),
         ),
 
-        const SizedBox(width: 40),
+        const SizedBox(width: 48),
 
-        // Right Column: Spotlight Masterpiece Card
+        // Right Column: Spotlight Masterpiece Showcase
         Expanded(
           flex: 5,
           child: Container(
             decoration: BoxDecoration(
               color: AppTheme.pureWhite,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(28),
               border: Border.all(color: AppTheme.delicateBorder),
-              boxShadow: AppTheme.cardHoverShadow,
+              boxShadow: AppTheme.editorialShadow,
             ),
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(22),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       child: AspectRatio(
                         aspectRatio: 1.15,
                         child: Image.network(
@@ -914,26 +988,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     Positioned(
-                      top: 12,
-                      left: 12,
+                      top: 14,
+                      left: 14,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppTheme.charcoalNoir,
-                          borderRadius: BorderRadius.circular(8),
+                          color: AppTheme.velvetNoir.withValues(alpha: 0.90),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            AtelierStarIcon(size: 10, color: AppTheme.goldAccent),
+                            AtelierStarIcon(size: 9, color: AppTheme.goldAccent),
                             SizedBox(width: 6),
                             Text(
-                              'FLAGSHIP SPOTLIGHT',
+                              'FLAGSHIP SPOTLIGHT • SPRING 2026',
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 0.8,
-                                color: AppTheme.goldAccent,
+                                color: AppTheme.pureWhite,
                               ),
                             ),
                           ],
@@ -942,10 +1023,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -955,14 +1037,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: const TextStyle(
                             fontFamily: 'Playfair Display',
                             fontWeight: FontWeight.w700,
-                            fontSize: 18,
+                            fontSize: 20,
                             color: AppTheme.charcoalNoir,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 3),
                         Text(
                           '${spotlightProduct.shapeOrVolume} • ${spotlightProduct.finish}',
-                          style: const TextStyle(fontSize: 11, color: AppTheme.dustyRose, fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontSize: 12, color: AppTheme.dustyRose, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -970,14 +1052,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       '\$${spotlightProduct.price.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontFamily: 'Playfair Display',
-                        fontSize: 22,
+                        fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.charcoalNoir,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
 
                 SizedBox(
                   width: double.infinity,
@@ -993,10 +1075,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.charcoalNoir,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      foregroundColor: AppTheme.pureWhite,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
                     ),
-                    child: const Text('Add Flagship to Bag • \$28.00', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Reserve Piece • \$28.00', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                        SizedBox(width: 8),
+                        AtelierStarIcon(size: 11, color: AppTheme.goldAccent),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -1011,58 +1102,136 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppTheme.charcoalNoir,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AtelierStarIcon(size: 8, color: AppTheme.goldAccent),
-              SizedBox(width: 6),
-              Text(
-                'SPRING 2026 • 13 PIECES',
-                style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
         Text(
           'Bespoke Glaze &\nSculpted Form.',
           style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
+                fontSize: 36,
+                fontWeight: FontWeight.w700,
                 fontFamily: 'Playfair Display',
-                height: 1.15,
+                height: 1.1,
+                letterSpacing: -0.5,
               ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         const Text(
           '13 handcrafted pastel polishes & press-ons with Supabase sync and Stripe checkout.',
-          style: TextStyle(color: AppTheme.textMuted, fontSize: 13, height: 1.5),
+          style: TextStyle(color: AppTheme.textMuted, fontSize: 13.5, height: 1.55),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 20),
         ElevatedButton(
           onPressed: _scrollToCatalog,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.charcoalNoir,
             foregroundColor: AppTheme.pureWhite,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            elevation: 0,
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Explore 13 Pieces', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-              SizedBox(width: 6),
-              Icon(Icons.arrow_downward, size: 14),
+              SizedBox(width: 8),
+              AtelierStarIcon(size: 10, color: AppTheme.goldAccent),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEditorialPillar({
+    required String romanNumeral,
+    required String title,
+    required String badge,
+    required String description,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              romanNumeral,
+              style: const TextStyle(
+                fontFamily: 'Playfair Display',
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.goldAccent,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.blush100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                badge,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
+                  color: AppTheme.deepRose,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Playfair Display',
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            color: AppTheme.charcoalNoir,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          description,
+          style: const TextStyle(
+            fontSize: 13,
+            color: AppTheme.textMuted,
+            height: 1.6,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHallmarkItem(String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const AtelierStarIcon(size: 9, color: AppTheme.goldAccent),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.charcoalNoir,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHallmarkDivider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Container(
+        width: 3,
+        height: 3,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppTheme.textSubtle,
+        ),
+      ),
     );
   }
 
@@ -1114,66 +1283,6 @@ class _HomeScreenState extends State<HomeScreen> {
               fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGuideCard(
-    BuildContext context, {
-    required IconData icon,
-    required String tag,
-    required String title,
-    required String description,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: AppTheme.pureWhite,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.delicateBorder),
-        boxShadow: AppTheme.softShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.blush50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: AppTheme.dustyRose, size: 22),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            tag,
-            style: const TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-              color: AppTheme.dustyRose,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: const TextStyle(
-              fontFamily: 'Playfair Display',
-              fontWeight: FontWeight.w700,
-              fontSize: 17,
-              color: AppTheme.charcoalNoir,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppTheme.textMuted,
-              height: 1.5,
             ),
           ),
         ],
