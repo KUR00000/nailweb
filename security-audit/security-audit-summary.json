@@ -1,0 +1,120 @@
+{
+  "repository": "KUR00000/nailweb",
+  "audit_date_utc": "2026-10-13",
+  "artifacts_version": "1.0",
+  "feature_totals": {
+    "verified_implemented": 20,
+    "partially_implemented": 3,
+    "conditionally_enabled": 2,
+    "test_only": 3,
+    "documented_only": 2,
+    "unverified": 4,
+    "total": 34
+  },
+  "implemented_features_master_inventory_count": 20,
+  "implemented_feature_ids": [
+    "SECR-001",
+    "AUTH-001",
+    "AUTH-002",
+    "AUTH-003",
+    "AUTH-004",
+    "AUTHZ-001",
+    "AUTHZ-002",
+    "AUTHZ-003",
+    "AUTHZ-004",
+    "AUTHZ-005",
+    "DB-001",
+    "SECR-002",
+    "PAY-001",
+    "PAY-002",
+    "PAY-003",
+    "PAY-004",
+    "API-001",
+    "API-002",
+    "OPS-001",
+    "WEB-001"
+  ],
+  "partially_implemented_ids": [
+    "API-003",
+    "WEB-002",
+    "OPS-002"
+  ],
+  "conditionally_enabled_ids": [
+    "INT-001",
+    "INT-002"
+  ],
+  "test_only_ids": [
+    "TEST-001",
+    "TEST-002",
+    "TEST-003"
+  ],
+  "documented_only_ids": [
+    "DOC-001",
+    "DOC-002"
+  ],
+  "unverified_ids": [
+    "INFRA-001",
+    "INFRA-002",
+    "OPS-003",
+    "DB-002"
+  ],
+  "categories": {
+    "Authentication": 4,
+    "Authorization": 5,
+    "Secrets Management": 2,
+    "Payments": 4,
+    "API Security": 3,
+    "Data Integrity": 1,
+    "Operations": 3,
+    "Web Security": 2,
+    "Integration": 2,
+    "Testing": 3,
+    "Documentation": 2,
+    "Infrastructure": 2,
+    "Database": 1
+  },
+  "priority_findings": [
+    {
+      "id": "GAP-001",
+      "title": "Permissive CORS wildcard origins",
+      "severity": "High",
+      "related_feature_ids": ["API-003"]
+    },
+    {
+      "id": "GAP-002",
+      "title": "Hardcoded VIP credentials in production auth path",
+      "severity": "Critical",
+      "related_feature_ids": ["AUTH-001"]
+    },
+    {
+      "id": "GAP-003",
+      "title": "Low-entropy order identifier generation",
+      "severity": "High",
+      "related_feature_ids": ["PAY-002"]
+    },
+    {
+      "id": "GAP-004",
+      "title": "CSP allows unsafe-inline and unsafe-eval",
+      "severity": "High",
+      "related_feature_ids": ["WEB-002"]
+    },
+    {
+      "id": "GAP-005",
+      "title": "In-memory single-node rate limiting",
+      "severity": "Medium",
+      "related_feature_ids": ["OPS-002"]
+    },
+    {
+      "id": "GAP-006",
+      "title": "SECURITY DEFINER functions lack explicit hardened search_path",
+      "severity": "Medium",
+      "related_feature_ids": ["AUTHZ-005", "OPS-001"]
+    }
+  ],
+  "runtime_verification": {
+    "ci_runs_inspected": true,
+    "node_build_passed": false,
+    "flutter_tests_runnable": false,
+    "npm_audit_production_dependencies": "0 vulnerabilities"
+  }
+}
